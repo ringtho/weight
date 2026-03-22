@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm rebuild:*)",
+      "Bash(curl -s http://localhost:5175/api/health)",
+      "Bash(curl -s http://localhost:5174/api/health)",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)",
+      "Bash(curl -s -X POST http://localhost:5175/api/auth/register -H \"Content-Type: application/json\" -d '{\"\"\"\"username\"\"\"\":\"\"\"\"testuser\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"password123\"\"\"\"}')",
+      "Bash(sqlite3 /Users/sringtho/Desktop/Apps/weight/server/data/fat-loss.db \"UPDATE users SET role=''admin'' WHERE username=''sringtho@gmail.com'' OR email=''sringtho@gmail.com''; SELECT id, username, email, role FROM users WHERE username=''sringtho@gmail.com'' OR email=''sringtho@gmail.com'';\")",
+      "Bash(sqlite3 /Users/sringtho/Desktop/Apps/weight/server/data/fat-loss.db \"SELECT id, username, email, role FROM users;\")",
+      "Bash(node -e \":*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(/usr/local/bin/node ./node_modules/.bin/tsc --noEmit)",
+      "Bash(ls -la /Users/sringtho/Desktop/Apps/weight/.env*)",
+      "Bash(/usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js install dotenv)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
