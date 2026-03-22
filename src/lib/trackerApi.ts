@@ -1,7 +1,7 @@
 import type { PersistedState } from './trackerTypes';
 import { normalizePersistedState } from './trackerNormalization';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5175';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 const API_TIMEOUT_MS = 5000;
 
 const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {

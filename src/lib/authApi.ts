@@ -14,7 +14,7 @@ export type AdminUser = AuthUser & {
   data_bytes: number;
 };
 
-const API = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5175';
+const API = import.meta.env.VITE_API_BASE_URL ?? '';
 
 async function authFetch(path: string, options: RequestInit = {}) {
   return fetch(`${API}${path}`, {
