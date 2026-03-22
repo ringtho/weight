@@ -12,7 +12,7 @@ const JWT_EXPIRES = '30d';
 const COOKIE_NAME = 'flt_token';
 const SALT_ROUNDS = 12;
 const IS_PROD     = process.env.NODE_ENV === 'production' || !!process.env.NETLIFY;
-const FROM_EMAIL  = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_EMAIL  = process.env.FROM_EMAIL || 'Fat Loss Tracker <onboarding@resend.dev>';
 const resend      = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // ── MongoDB ───────────────────────────────────────────────────────────────────
@@ -82,10 +82,10 @@ function userToJson(u) {
 }
 
 async function sendWelcomeEmail(name, email) {
-  if (!resend) return;
+  if (!resend) { console.log('Resend not configured, skipping welcome email.'); return; }
   const firstName = name.split(' ')[0];
-  await resend.emails.send({
-    from: `Fat Loss Tracker <${FROM_EMAIL}>`,
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
     to: email,
     subject: `Welcome to Fat Loss Tracker, ${firstName}! 🔥`,
     html: `
@@ -119,6 +119,8 @@ async function sendWelcomeEmail(name, email) {
       </div>
     `,
   });
+  if (error) console.error('Resend error:', JSON.stringify(error));
+  else console.log('Welcome email sent:', data?.id);
 }
 
 // ── Auth routes ───────────────────────────────────────────────────────────────
