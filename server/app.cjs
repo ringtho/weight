@@ -4,6 +4,7 @@ const cors         = require('cors');
 const express      = require('express');
 const jwt          = require('jsonwebtoken');
 const { MongoClient, ObjectId } = require('mongodb');
+const { Resend } = require('resend');
 
 const MONGO_URI   = process.env.MONGO_URI;
 const JWT_SECRET  = process.env.JWT_SECRET || 'fat-loss-tracker-dev-secret-change-in-prod';
@@ -11,6 +12,8 @@ const JWT_EXPIRES = '30d';
 const COOKIE_NAME = 'flt_token';
 const SALT_ROUNDS = 12;
 const IS_PROD     = process.env.NODE_ENV === 'production' || !!process.env.NETLIFY;
+const FROM_EMAIL  = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const resend      = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // ── MongoDB ───────────────────────────────────────────────────────────────────
 
@@ -78,6 +81,46 @@ function userToJson(u) {
   return { id: u._id.toString(), username: u.username, name: u.name, email: u.email, role: u.role };
 }
 
+async function sendWelcomeEmail(name, email) {
+  if (!resend) return;
+  const firstName = name.split(' ')[0];
+  await resend.emails.send({
+    from: `Fat Loss Tracker <${FROM_EMAIL}>`,
+    to: email,
+    subject: `Welcome to Fat Loss Tracker, ${firstName}! 🔥`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#0f0f1a;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7c3aed,#6366f1);padding:40px 32px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:8px;">🔥</div>
+          <h1 style="margin:0;font-size:26px;color:#fff;font-weight:800;">Fat Loss Tracker</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:15px;">Your transformation starts today</p>
+        </div>
+        <div style="padding:32px;">
+          <h2 style="color:#fff;margin-top:0;">Hey ${firstName}! 👋</h2>
+          <p style="color:#94a3b8;line-height:1.6;">
+            You're all set. Your Fat Loss Tracker account is ready and your journey begins now.
+          </p>
+          <p style="color:#94a3b8;line-height:1.6;">Here's what to do first:</p>
+          <ol style="color:#94a3b8;line-height:2;padding-left:20px;">
+            <li>Head to <strong style="color:#a78bfa;">Settings</strong> and set your start weight, target, and program duration</li>
+            <li>Log your first day in <strong style="color:#a78bfa;">Daily Log</strong></li>
+            <li>Record your starting measurements in <strong style="color:#a78bfa;">Weekly Check-in</strong></li>
+          </ol>
+          <div style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:16px;margin:24px 0;">
+            <p style="margin:0;color:#c4b5fd;font-size:14px;">
+              💡 <strong>Tip:</strong> Consistency beats perfection. Log something every day — even on bad days.
+            </p>
+          </div>
+          <p style="color:#64748b;font-size:13px;margin-top:32px;">
+            You're receiving this because you signed up at Fat Loss Tracker.<br/>
+            If this wasn't you, you can safely ignore this email.
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 // ── Auth routes ───────────────────────────────────────────────────────────────
 
 app.post('/api/auth/register', wrap(async (req, res) => {
@@ -117,6 +160,9 @@ app.post('/api/auth/register', wrap(async (req, res) => {
   const userId = result.insertedId.toString();
   issueToken(res, userId);
   res.status(201).json({ id: userId, username: cleanUsername, name: cleanName, email: cleanEmail, role });
+
+  // Fire-and-forget — don't block the response
+  sendWelcomeEmail(cleanName, cleanEmail).catch(err => console.error('Welcome email failed:', err));
 }));
 
 app.post('/api/auth/login', wrap(async (req, res) => {
